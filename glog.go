@@ -391,13 +391,22 @@ type flushSyncWriter interface {
 	io.Writer
 }
 
+func parseInt(s string) int64 {
+	v, _ := strconv.ParseInt(s, 10, 64)
+	return v
+}
+
 func init() {
-	flag.BoolVar(&logging.toStderr, "logtostderr", false, "log to standard error instead of files")
-	flag.BoolVar(&logging.alsoToStderr, "alsologtostderr", false, "log to standard error as well as files")
-	flag.Var(&logging.verbosity, "v", "log level for V logs")
-	flag.Var(&logging.stderrThreshold, "stderrthreshold", "logs at or above this threshold go to stderr")
-	flag.Var(&logging.vmodule, "vmodule", "comma-separated list of pattern=N settings for file-filtered logging")
-	flag.Var(&logging.traceLocation, "log_backtrace_at", "when logging hits line file:N, emit a stack trace")
+	fs := flag.NewFlagSet("gobrake", flag.ExitOnError)
+
+	fs.StringVar(&logDir, "log_dir", "", "If non-empty, write log files in this directory")
+
+	fs.BoolVar(&logging.toStderr, "logtostderr", false, "log to standard error instead of files")
+	fs.BoolVar(&logging.alsoToStderr, "alsologtostderr", false, "log to standard error as well as files")
+	fs.Var(&logging.verbosity, "v", "log level for V logs")
+	fs.Var(&logging.stderrThreshold, "stderrthreshold", "logs at or above this threshold go to stderr")
+	fs.Var(&logging.vmodule, "vmodule", "comma-separated list of pattern=N settings for file-filtered logging")
+	fs.Var(&logging.traceLocation, "log_backtrace_at", "when logging hits line file:N, emit a stack trace")
 
 	// Default stderrThreshold is ERROR.
 	logging.stderrThreshold = errorLog
@@ -615,6 +624,7 @@ func (l *loggingT) println(s severity, args ...interface{}) {
 	buf := l.header(s)
 	fmt.Fprintln(buf, args...)
 	l.output(s, buf)
+	notifyAirbrake(s, "", args...)
 }
 
 func (l *loggingT) print(s severity, args ...interface{}) {
@@ -624,6 +634,7 @@ func (l *loggingT) print(s severity, args ...interface{}) {
 		buf.WriteByte('\n')
 	}
 	l.output(s, buf)
+	notifyAirbrake(s, "", args...)
 }
 
 func (l *loggingT) printf(s severity, format string, args ...interface{}) {
@@ -633,6 +644,7 @@ func (l *loggingT) printf(s severity, format string, args ...interface{}) {
 		buf.WriteByte('\n')
 	}
 	l.output(s, buf)
+	notifyAirbrake(s, format, args...)
 }
 
 // output writes the data to the log files and releases the buffer.
