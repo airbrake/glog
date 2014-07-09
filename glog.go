@@ -391,11 +391,6 @@ type flushSyncWriter interface {
 	io.Writer
 }
 
-func parseInt(s string) int64 {
-	v, _ := strconv.ParseInt(s, 10, 64)
-	return v
-}
-
 func init() {
 	fs := flag.NewFlagSet("gobrake", flag.ExitOnError)
 
