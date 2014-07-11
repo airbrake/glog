@@ -405,13 +405,14 @@ func init() {
 	fs.Var(&logging.stderrThreshold, "stderrthreshold", "logs at or above this threshold go to stderr")
 	fs.Var(&logging.vmodule, "vmodule", "comma-separated list of pattern=N settings for file-filtered logging")
 	fs.Var(&logging.traceLocation, "log_backtrace_at", "when logging hits line file:N, emit a stack trace")
-	fs.Parse(os.Args[1:])
 
 	// Default stderrThreshold is ERROR.
 	logging.stderrThreshold = errorLog
 
 	logging.setVState(0, nil, false)
 	go logging.flushDaemon()
+
+	fs.Parse(os.Args[1:])
 }
 
 // Flush flushes all pending log I/O.
