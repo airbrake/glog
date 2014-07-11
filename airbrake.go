@@ -2,6 +2,7 @@ package glog
 
 import (
 	"fmt"
+	"net/http"
 
 	"gopkg.in/airbrake/gobrake.v1"
 )
@@ -23,6 +24,14 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 		msg = fmt.Sprint(args...)
 	}
 
+	var req *http.Request
+	for _, arg := range args {
+		if v, ok := arg.(requester); ok {
+			req = v.Request()
+			break
+		}
+	}
+
 	foundErr := false
 	for _, arg := range args {
 		err, ok := arg.(error)
@@ -31,13 +40,17 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 		}
 		foundErr = true
 
-		notice := Gobrake.Notice(err, nil, 5)
+		notice := Gobrake.Notice(err, req, 5)
 		notice.Env["glog_message"] = msg
 		go Gobrake.SendNotice(notice)
 	}
 
 	if !foundErr {
-		notice := Gobrake.Notice(msg, nil, 5)
+		notice := Gobrake.Notice(msg, req, 5)
 		go Gobrake.SendNotice(notice)
 	}
+}
+
+type requester interface {
+	Request() *http.Request
 }
