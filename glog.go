@@ -77,7 +77,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -86,8 +85,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	_ "github.com/golang/glog"
 )
 
 // severity identifies the sort of log: info, warning etc. It also implements
@@ -397,22 +394,18 @@ type flushSyncWriter interface {
 func init() {
 	flag.StringVar(&logDir, "gobrake.log_dir", "", "If non-empty, write log files in this directory")
 
-	fs := flag.NewFlagSet("gobrake", flag.ContinueOnError)
-	fs.SetOutput(ioutil.Discard)
-	fs.BoolVar(&logging.toStderr, "logtostderr", false, "log to standard error instead of files")
-	fs.BoolVar(&logging.alsoToStderr, "alsologtostderr", false, "log to standard error as well as files")
-	fs.Var(&logging.verbosity, "v", "log level for V logs")
-	fs.Var(&logging.stderrThreshold, "stderrthreshold", "logs at or above this threshold go to stderr")
-	fs.Var(&logging.vmodule, "vmodule", "comma-separated list of pattern=N settings for file-filtered logging")
-	fs.Var(&logging.traceLocation, "log_backtrace_at", "when logging hits line file:N, emit a stack trace")
+	flag.BoolVar(&logging.toStderr, "gobrake.logtostderr", false, "log to standard error instead of files")
+	flag.BoolVar(&logging.alsoToStderr, "gobrake.alsologtostderr", false, "log to standard error as well as files")
+	flag.Var(&logging.verbosity, "gobrake.v", "log level for V logs")
+	flag.Var(&logging.stderrThreshold, "gobrake.stderrthreshold", "logs at or above this threshold go to stderr")
+	flag.Var(&logging.vmodule, "gobrake.vmodule", "comma-separated list of pattern=N settings for file-filtered logging")
+	flag.Var(&logging.traceLocation, "gobrake.log_backtrace_at", "when logging hits line file:N, emit a stack trace")
 
 	// Default stderrThreshold is ERROR.
 	logging.stderrThreshold = errorLog
 
 	logging.setVState(0, nil, false)
 	go logging.flushDaemon()
-
-	fs.Parse(os.Args[1:])
 }
 
 // Flush flushes all pending log I/O.
