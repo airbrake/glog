@@ -10,7 +10,7 @@ import (
 var Gobrake *gobrake.Notifier
 
 // Minimum log severity that will be sent to Airbrake.
-var GobrakeSeverity = errorLog
+var GobrakeSeverity = ErrorLog
 
 func notifyAirbrake(s severity, format string, args ...interface{}) {
 	if Gobrake == nil {

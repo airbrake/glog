@@ -94,20 +94,20 @@ import (
 type severity int32 // sync/atomic int32
 
 const (
-	infoLog severity = iota
-	warningLog
-	errorLog
-	fatalLog
+	InfoLog severity = iota
+	WarningLog
+	ErrorLog
+	FatalLog
 	numSeverity = 4
 )
 
 const severityChar = "IWEF"
 
 var severityName = []string{
-	infoLog:    "INFO",
-	warningLog: "WARNING",
-	errorLog:   "ERROR",
-	fatalLog:   "FATAL",
+	InfoLog:    "INFO",
+	WarningLog: "WARNING",
+	ErrorLog:   "ERROR",
+	FatalLog:   "FATAL",
 }
 
 // get returns the value of the severity.
@@ -180,9 +180,9 @@ var Stats struct {
 }
 
 var severityStats = [numSeverity]*OutputStats{
-	infoLog:    &Stats.Info,
-	warningLog: &Stats.Warning,
-	errorLog:   &Stats.Error,
+	InfoLog:    &Stats.Info,
+	WarningLog: &Stats.Warning,
+	ErrorLog:   &Stats.Error,
 }
 
 // Level is exported because it appears in the arguments to V and is
@@ -402,7 +402,7 @@ func init() {
 	flag.Var(&logging.traceLocation, "gobrake.log_backtrace_at", "when logging hits line file:N, emit a stack trace")
 
 	// Default stderrThreshold is ERROR.
-	logging.stderrThreshold = errorLog
+	logging.stderrThreshold = ErrorLog
 
 	logging.setVState(0, nil, false)
 	go logging.flushDaemon()
@@ -545,8 +545,8 @@ func (l *loggingT) header(s severity) *buffer {
 	if line < 0 {
 		line = 0 // not a real line number, but acceptable to someDigits
 	}
-	if s > fatalLog {
-		s = infoLog // for safety.
+	if s > FatalLog {
+		s = InfoLog // for safety.
 	}
 	buf := l.getBuffer()
 
@@ -663,20 +663,20 @@ func (l *loggingT) output(s severity, buf *buffer) {
 			}
 		}
 		switch s {
-		case fatalLog:
-			l.file[fatalLog].Write(data)
+		case FatalLog:
+			l.file[FatalLog].Write(data)
 			fallthrough
-		case errorLog:
-			l.file[errorLog].Write(data)
+		case ErrorLog:
+			l.file[ErrorLog].Write(data)
 			fallthrough
-		case warningLog:
-			l.file[warningLog].Write(data)
+		case WarningLog:
+			l.file[WarningLog].Write(data)
 			fallthrough
-		case infoLog:
-			l.file[infoLog].Write(data)
+		case InfoLog:
+			l.file[InfoLog].Write(data)
 		}
 	}
-	if s == fatalLog {
+	if s == FatalLog {
 		// Make sure we see the trace for the current goroutine on standard error.
 		if !l.toStderr {
 			os.Stderr.Write(stacks(false))
@@ -684,7 +684,7 @@ func (l *loggingT) output(s severity, buf *buffer) {
 		// Write the stack trace for all goroutines to the files.
 		trace := stacks(true)
 		logExitFunc = func(error) {} // If we get a write error, we'll still exit below.
-		for log := fatalLog; log >= infoLog; log-- {
+		for log := FatalLog; log >= InfoLog; log-- {
 			if f := l.file[log]; f != nil { // Can be nil if -logtostderr is set.
 				f.Write(trace)
 			}
@@ -818,13 +818,13 @@ func (sb *syncBuffer) rotateFile(now time.Time) error {
 // on disk I/O. The flushDaemon will block instead.
 const bufferSize = 256 * 1024
 
-// createFiles creates all the log files for severity from sev down to infoLog.
+// createFiles creates all the log files for severity from sev down to InfoLog.
 // l.mu is held.
 func (l *loggingT) createFiles(sev severity) error {
 	now := time.Now()
 	// Files are created in decreasing severity order, so as soon as we find one
 	// has already been created, we can stop.
-	for s := sev; s >= infoLog && l.file[s] == nil; s-- {
+	for s := sev; s >= InfoLog && l.file[s] == nil; s-- {
 		sb := &syncBuffer{
 			logger: l,
 			sev:    s,
@@ -857,7 +857,7 @@ func (l *loggingT) lockAndFlushAll() {
 // l.mu is held.
 func (l *loggingT) flushAll() {
 	// Flush from fatal down, in case there's trouble flushing.
-	for s := fatalLog; s >= infoLog; s-- {
+	for s := FatalLog; s >= InfoLog; s-- {
 		file := l.file[s]
 		if file != nil {
 			file.Flush() // ignore error
@@ -943,7 +943,7 @@ func V(level Level) Verbose {
 // See the documentation of V for usage.
 func (v Verbose) Info(args ...interface{}) {
 	if v {
-		logging.print(infoLog, args...)
+		logging.print(InfoLog, args...)
 	}
 }
 
@@ -951,7 +951,7 @@ func (v Verbose) Info(args ...interface{}) {
 // See the documentation of V for usage.
 func (v Verbose) Infoln(args ...interface{}) {
 	if v {
-		logging.println(infoLog, args...)
+		logging.println(InfoLog, args...)
 	}
 }
 
@@ -959,81 +959,81 @@ func (v Verbose) Infoln(args ...interface{}) {
 // See the documentation of V for usage.
 func (v Verbose) Infof(format string, args ...interface{}) {
 	if v {
-		logging.printf(infoLog, format, args...)
+		logging.printf(InfoLog, format, args...)
 	}
 }
 
 // Info logs to the INFO log.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Info(args ...interface{}) {
-	logging.print(infoLog, args...)
+	logging.print(InfoLog, args...)
 }
 
 // Infoln logs to the INFO log.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Infoln(args ...interface{}) {
-	logging.println(infoLog, args...)
+	logging.println(InfoLog, args...)
 }
 
 // Infof logs to the INFO log.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Infof(format string, args ...interface{}) {
-	logging.printf(infoLog, format, args...)
+	logging.printf(InfoLog, format, args...)
 }
 
 // Warning logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Warning(args ...interface{}) {
-	logging.print(warningLog, args...)
+	logging.print(WarningLog, args...)
 }
 
 // Warningln logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Warningln(args ...interface{}) {
-	logging.println(warningLog, args...)
+	logging.println(WarningLog, args...)
 }
 
 // Warningf logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Warningf(format string, args ...interface{}) {
-	logging.printf(warningLog, format, args...)
+	logging.printf(WarningLog, format, args...)
 }
 
 // Error logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Error(args ...interface{}) {
-	logging.print(errorLog, args...)
+	logging.print(ErrorLog, args...)
 }
 
 // Errorln logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Errorln(args ...interface{}) {
-	logging.println(errorLog, args...)
+	logging.println(ErrorLog, args...)
 }
 
 // Errorf logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Errorf(format string, args ...interface{}) {
-	logging.printf(errorLog, format, args...)
+	logging.printf(ErrorLog, format, args...)
 }
 
 // Fatal logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Fatal(args ...interface{}) {
-	logging.print(fatalLog, args...)
+	logging.print(FatalLog, args...)
 }
 
 // Fatalln logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Fatalln(args ...interface{}) {
-	logging.println(fatalLog, args...)
+	logging.println(FatalLog, args...)
 }
 
 // Fatalf logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Fatalf(format string, args ...interface{}) {
-	logging.printf(fatalLog, format, args...)
+	logging.printf(FatalLog, format, args...)
 }
