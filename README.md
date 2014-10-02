@@ -1,44 +1,47 @@
-glog
-====
+# Glog
 
-Leveled execution logs for Go.
+This fork of https://github.com/golang/glog provides all of glog's functionality
+and adds the ability to send errors/logs to [Airbrake.io](https://airbrake.io).
 
-This is an efficient pure Go implementation of leveled logs in the
-manner of the open source C++ package
-	http://code.google.com/p/google-glog
+## Logging
 
-By binding methods to booleans it is possible to use the log package
-without paying the expense of evaluating the arguments to the log.
-Through the -vmodule flag, the package also provides fine-grained
-control over logging at the file level.
+Please refer to the [glog](https://github.com/golang/glog) code & docs.
 
-The comment from glog.go introduces the ideas:
+## Sending errors to Airbrake.io
 
-	Package glog implements logging analogous to the Google-internal
-	C++ INFO/ERROR/V setup.  It provides functions Info, Warning,
-	Error, Fatal, plus formatting variants such as Infof. It
-	also provides V-style logging controlled by the -v and
-	-vmodule=file=2 flags.
-	
-	Basic examples:
-	
-		glog.Info("Prepare to repel boarders")
-	
-		glog.Fatalf("Initialization failed: %s", err)
-	
-	See the documentation for the V function for an explanation
-	of these examples:
-	
-		if glog.V(2) {
-			glog.Info("Starting transaction...")
-		}
-	
-		glog.V(2).Infoln("Processed", nItems, "elements")
+A basic example of how to configure glog to send logged errors to Airbrake.io:
 
+```go
+package main
 
-The repository contains an open source version of the log package
-used inside Google. The master copy of the source lives inside
-Google, not here. The code in this repo is for export only and is not itself
-under development. Feature requests will be ignored.
+import (
+  "time"
 
-Send bug reports to golang-nuts@googlegroups.com.
+  "gopkg.in/airbrake/glog.v1"
+  "gopkg.in/airbrake/gobrake.v1"
+)
+
+var projectID int64 = 123
+var apiKey string = "YOUR_API_KEY"
+
+func main() {
+  airbrake := gobrake.NewNotifier(projectID, apiKey)
+  airbrake.SetContext("environment", "production")
+  glog.Gobrake = airbrake
+
+  glog.Error("Gorilla Overflow")
+
+  // Errors are sent asynchronously, allow time for them to send before we exit
+  // this example.
+  time.Sleep(time.Second * 2)
+}
+```
+
+## Configure severity
+
+The default is to send only error logs to Airbrake.io. You can change the
+severity threshold to also send lower severity logs too, such as warnings:
+
+```go
+glog.GobrakeSeverity = glog.WarningLog
+```
