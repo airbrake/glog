@@ -7,10 +7,16 @@ import (
 	"gopkg.in/airbrake/gobrake.v1"
 )
 
+// Gobrake is an instance of Airbrake Go Notifier that is used to send
+// logs to Airbrake.
 var Gobrake *gobrake.Notifier
 
 // Minimum log severity that will be sent to Airbrake.
 var GobrakeSeverity = ErrorLog
+
+type requester interface {
+	Request() *http.Request
+}
 
 func notifyAirbrake(s severity, format string, args ...interface{}) {
 	if Gobrake == nil {
@@ -43,17 +49,13 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 		}
 		foundErr = true
 
-		notice := Gobrake.Notice(err, req, 5)
+		notice := Gobrake.Notice(err, req, 4)
 		notice.Env["glog_message"] = msg
 		go Gobrake.SendNotice(notice)
 	}
 
 	if !foundErr {
-		notice := Gobrake.Notice(msg, req, 5)
+		notice := Gobrake.Notice(msg, req, 4)
 		go Gobrake.SendNotice(notice)
 	}
-}
-
-type requester interface {
-	Request() *http.Request
 }
