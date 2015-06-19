@@ -21,11 +21,11 @@ import (
   "gopkg.in/airbrake/gobrake.v1"
 )
 
-var projectID int64 = 123
+var projectId int64 = 123
 var apiKey string = "YOUR_API_KEY"
 
 func main() {
-  airbrake := gobrake.NewNotifier(projectID, apiKey)
+  airbrake := gobrake.NewNotifier(projectId, apiKey)
   airbrake.SetContext("environment", "production")
   glog.Gobrake = airbrake
 
