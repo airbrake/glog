@@ -12,7 +12,10 @@ import (
 var Gobrake *gobrake.Notifier
 
 // Minimum log severity that will be sent to Airbrake.
-var GobrakeSeverity = ErrorLog
+//
+// Valid names are "INFO", "WARNING", "ERROR", and "FATAL".  If the name is not
+// recognized, "ERROR" severity is used.
+var GobrakeSeverity = "ERROR"
 
 type requester interface {
 	Request() *http.Request
@@ -22,7 +25,12 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 	if Gobrake == nil {
 		return
 	}
-	if s < GobrakeSeverity {
+
+	severity, ok := severityByName(GobrakeSeverity)
+	if !ok {
+		severity = errorLog
+	}
+	if s < severity {
 		return
 	}
 

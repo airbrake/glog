@@ -17,6 +17,7 @@ package glog
 
 import (
 	"fmt"
+	"strings"
 
 	golog "github.com/golang/glog"
 )
@@ -31,12 +32,18 @@ type severity int32 // sync/atomic int32
 // A message written to a high-severity log file is also written to each
 // lower-severity log file.
 const (
-	InfoLog severity = iota
-	WarningLog
-	ErrorLog
-	FatalLog
-	numSeverity = 4
+	infoLog severity = iota
+	warningLog
+	errorLog
+	fatalLog
 )
+
+var severityName = []string{
+	infoLog:    "INFO",
+	warningLog: "WARNING",
+	errorLog:   "ERROR",
+	fatalLog:   "FATAL",
+}
 
 // Stats tracks the number of lines of output and number of bytes
 // per severity level. Values must be read with atomic.LoadInt64.
@@ -45,6 +52,16 @@ var Stats = golog.Stats
 // SetMaxSize sets maximum size of a log file in bytes.
 func SetMaxSize(maxSize uint64) {
 	golog.MaxSize = maxSize
+}
+
+func severityByName(s string) (severity, bool) {
+	s = strings.ToUpper(s)
+	for i, name := range severityName {
+		if name == s {
+			return severity(i), true
+		}
+	}
+	return 0, false
 }
 
 // CopyStandardLogTo arranges for messages written to the Go "log" package's
@@ -67,63 +84,63 @@ func Flush() {
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Info(args ...interface{}) {
 	golog.InfoDepth(1, args...)
-	notifyAirbrake(InfoLog, "", args...)
+	notifyAirbrake(infoLog, "", args...)
 }
 
 // Infoln logs to the INFO log.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Infoln(args ...interface{}) {
 	golog.InfoDepth(1, fmt.Sprintln(args...))
-	notifyAirbrake(InfoLog, "", args...)
+	notifyAirbrake(infoLog, "", args...)
 }
 
 // Infof logs to the INFO log.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Infof(format string, args ...interface{}) {
 	golog.InfoDepth(1, fmt.Sprintf(format, args...))
-	notifyAirbrake(InfoLog, format, args...)
+	notifyAirbrake(infoLog, format, args...)
 }
 
 // Warning logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Warning(args ...interface{}) {
 	golog.WarningDepth(1, args...)
-	notifyAirbrake(WarningLog, "", args...)
+	notifyAirbrake(warningLog, "", args...)
 }
 
 // Warningln logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Warningln(args ...interface{}) {
 	golog.WarningDepth(1, fmt.Sprintln(args...))
-	notifyAirbrake(WarningLog, "", args...)
+	notifyAirbrake(warningLog, "", args...)
 }
 
 // Warningf logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Warningf(format string, args ...interface{}) {
 	golog.WarningDepth(1, fmt.Sprintf(format, args...))
-	notifyAirbrake(WarningLog, format, args...)
+	notifyAirbrake(warningLog, format, args...)
 }
 
 // Error logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Error(args ...interface{}) {
 	golog.ErrorDepth(1, args...)
-	notifyAirbrake(ErrorLog, "", args...)
+	notifyAirbrake(errorLog, "", args...)
 }
 
 // Errorln logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Errorln(args ...interface{}) {
 	golog.ErrorDepth(1, fmt.Sprintln(args...))
-	notifyAirbrake(ErrorLog, "", args...)
+	notifyAirbrake(errorLog, "", args...)
 }
 
 // Errorf logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Errorf(format string, args ...interface{}) {
 	golog.ErrorDepth(1, fmt.Sprintf(format, args...))
-	notifyAirbrake(ErrorLog, format, args...)
+	notifyAirbrake(errorLog, format, args...)
 }
 
 // Fatal logs to the FATAL, ERROR, WARNING, and INFO logs,
@@ -131,7 +148,7 @@ func Errorf(format string, args ...interface{}) {
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Fatal(args ...interface{}) {
 	golog.FatalDepth(1, args...)
-	notifyAirbrake(FatalLog, "", args...)
+	notifyAirbrake(fatalLog, "", args...)
 }
 
 // Fatalln logs to the FATAL, ERROR, WARNING, and INFO logs,
@@ -139,7 +156,7 @@ func Fatal(args ...interface{}) {
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Fatalln(args ...interface{}) {
 	golog.FatalDepth(1, fmt.Sprintln(args...))
-	notifyAirbrake(FatalLog, "", args...)
+	notifyAirbrake(fatalLog, "", args...)
 }
 
 // Fatalf logs to the FATAL, ERROR, WARNING, and INFO logs,
@@ -147,27 +164,27 @@ func Fatalln(args ...interface{}) {
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Fatalf(format string, args ...interface{}) {
 	golog.FatalDepth(1, fmt.Sprintf(format, args...))
-	notifyAirbrake(FatalLog, format, args...)
+	notifyAirbrake(fatalLog, format, args...)
 }
 
 // Exit logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Exit(args ...interface{}) {
 	golog.ExitDepth(1, args...)
-	notifyAirbrake(ErrorLog, "", args...)
+	notifyAirbrake(errorLog, "", args...)
 }
 
 // Exitln logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 func Exitln(args ...interface{}) {
 	golog.ExitDepth(1, fmt.Sprintln(args...))
-	notifyAirbrake(ErrorLog, "", args...)
+	notifyAirbrake(errorLog, "", args...)
 }
 
 // Exitf logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Exitf(format string, args ...interface{}) {
 	golog.ExitDepth(1, fmt.Sprintf(format, args...))
-	notifyAirbrake(ErrorLog, format, args...)
+	notifyAirbrake(errorLog, format, args...)
 }
 
 // Verbose is a boolean type that implements Infof (like Printf) etc.
