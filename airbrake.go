@@ -41,21 +41,18 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 		}
 	}
 
-	foundErr := false
 	for _, arg := range args {
 		err, ok := arg.(error)
 		if !ok {
 			continue
 		}
-		foundErr = true
 
 		notice := Gobrake.Notice(err, req, 4)
-		notice.Env["glog_message"] = msg
+		notice.Errors[0].Message = msg
 		go Gobrake.SendNotice(notice)
+		return
 	}
 
-	if !foundErr {
-		notice := Gobrake.Notice(msg, req, 4)
-		go Gobrake.SendNotice(notice)
-	}
+	notice := Gobrake.Notice(msg, req, 4)
+	go Gobrake.SendNotice(notice)
 }
