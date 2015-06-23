@@ -66,123 +66,108 @@ func Flush() {
 // Info logs to the INFO log.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Info(args ...interface{}) {
-	msg := fmt.Sprint(args...)
-	golog.InfoDepth(1, msg)
-	notifyAirbrake(InfoLog, msg)
+	golog.InfoDepth(1, args...)
+	notifyAirbrake(InfoLog, "", args...)
 }
 
 // Infoln logs to the INFO log.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Infoln(args ...interface{}) {
-	msg := fmt.Sprintln(args...)
-	golog.InfoDepth(1, msg)
-	notifyAirbrake(InfoLog, msg)
+	golog.InfoDepth(1, fmt.Sprintln(args...))
+	notifyAirbrake(InfoLog, "", args...)
 }
 
 // Infof logs to the INFO log.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Infof(format string, args ...interface{}) {
-	msg := fmt.Sprintf(format, args...)
-	golog.InfoDepth(1, msg)
-	notifyAirbrake(InfoLog, msg)
+	golog.InfoDepth(1, fmt.Sprintf(format, args...))
+	notifyAirbrake(InfoLog, format, args...)
 }
 
 // Warning logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Warning(args ...interface{}) {
-	msg := fmt.Sprint(args...)
-	golog.WarningDepth(1, msg)
-	notifyAirbrake(WarningLog, msg)
+	golog.WarningDepth(1, args...)
+	notifyAirbrake(WarningLog, "", args...)
 }
 
 // Warningln logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Warningln(args ...interface{}) {
-	msg := fmt.Sprintln(args...)
-	golog.WarningDepth(1, msg)
-	notifyAirbrake(WarningLog, msg)
+	golog.WarningDepth(1, fmt.Sprintln(args...))
+	notifyAirbrake(WarningLog, "", args...)
 }
 
 // Warningf logs to the WARNING and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Warningf(format string, args ...interface{}) {
-	msg := fmt.Sprintf(format, args...)
-	golog.WarningDepth(1, msg)
-	notifyAirbrake(WarningLog, msg)
+	golog.WarningDepth(1, fmt.Sprintf(format, args...))
+	notifyAirbrake(WarningLog, format, args...)
 }
 
 // Error logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Error(args ...interface{}) {
-	msg := fmt.Sprint(args...)
-	golog.ErrorDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ErrorDepth(1, args...)
+	notifyAirbrake(ErrorLog, "", args...)
 }
 
 // Errorln logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Errorln(args ...interface{}) {
-	msg := fmt.Sprintln(args...)
-	golog.ErrorDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ErrorDepth(1, fmt.Sprintln(args...))
+	notifyAirbrake(ErrorLog, "", args...)
 }
 
 // Errorf logs to the ERROR, WARNING, and INFO logs.
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Errorf(format string, args ...interface{}) {
-	msg := fmt.Sprintf(format, args...)
-	golog.ErrorDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ErrorDepth(1, fmt.Sprintf(format, args...))
+	notifyAirbrake(ErrorLog, format, args...)
 }
 
 // Fatal logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Fatal(args ...interface{}) {
-	msg := fmt.Sprint(args...)
-	golog.FatalDepth(1, msg)
-	notifyAirbrake(FatalLog, msg)
+	golog.FatalDepth(1, args...)
+	notifyAirbrake(FatalLog, "", args...)
 }
 
 // Fatalln logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Println; a newline is appended if missing.
 func Fatalln(args ...interface{}) {
-	msg := fmt.Sprintln(args...)
-	golog.FatalDepth(1, msg)
-	notifyAirbrake(FatalLog, msg)
+	golog.FatalDepth(1, fmt.Sprintln(args...))
+	notifyAirbrake(FatalLog, "", args...)
 }
 
 // Fatalf logs to the FATAL, ERROR, WARNING, and INFO logs,
 // including a stack trace of all running goroutines, then calls os.Exit(255).
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Fatalf(format string, args ...interface{}) {
-	msg := fmt.Sprintf(format, args...)
-	golog.FatalDepth(1, msg)
-	notifyAirbrake(FatalLog, msg)
+	golog.FatalDepth(1, fmt.Sprintf(format, args...))
+	notifyAirbrake(FatalLog, format, args...)
 }
 
 // Exit logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 // Arguments are handled in the manner of fmt.Print; a newline is appended if missing.
 func Exit(args ...interface{}) {
-	msg := fmt.Sprint(args...)
-	golog.ExitDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ExitDepth(1, args...)
+	notifyAirbrake(ErrorLog, "", args...)
 }
 
 // Exitln logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 func Exitln(args ...interface{}) {
-	msg := fmt.Sprintln(args...)
-	golog.ExitDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ExitDepth(1, fmt.Sprintln(args...))
+	notifyAirbrake(ErrorLog, "", args...)
 }
 
 // Exitf logs to the FATAL, ERROR, WARNING, and INFO logs, then calls os.Exit(1).
 // Arguments are handled in the manner of fmt.Printf; a newline is appended if missing.
 func Exitf(format string, args ...interface{}) {
-	msg := fmt.Sprintf(format, args...)
-	golog.ExitDepth(1, msg)
-	notifyAirbrake(ErrorLog, msg)
+	golog.ExitDepth(1, fmt.Sprintf(format, args...))
+	notifyAirbrake(ErrorLog, format, args...)
 }
 
 // Verbose is a boolean type that implements Infof (like Printf) etc.
