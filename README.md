@@ -15,25 +15,27 @@ A basic example of how to configure glog to send logged errors to Airbrake.io:
 package main
 
 import (
-  "time"
+	"time"
 
-  "gopkg.in/airbrake/glog.v1"
-  "gopkg.in/airbrake/gobrake.v1"
+	"gopkg.in/airbrake/glog.v2"
+	"gopkg.in/airbrake/gobrake.v1"
 )
 
 var projectId int64 = 123
 var apiKey string = "YOUR_API_KEY"
 
 func main() {
-  airbrake := gobrake.NewNotifier(projectId, apiKey)
-  airbrake.SetContext("environment", "production")
-  glog.Gobrake = airbrake
+	airbrake := gobrake.NewNotifier(projectId, apiKey)
+	airbrake.SetContext("environment", "production")
+	glog.Gobrake = airbrake
 
-  glog.Error("Gorilla Overflow")
+	if err := doSomeWork(); err != nil {
+		glog.Errorf("doSomeWork failed: %s", err)
+	}
 
-  // Errors are sent asynchronously, allow time for them to send before we exit
-  // this example.
-  time.Sleep(time.Second * 2)
+	// Errors are sent asynchronously, allow time for them to send before we exit
+	// this example.
+	select {}
 }
 ```
 
