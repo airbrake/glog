@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"gopkg.in/airbrake/glog.v2"
-	"gopkg.in/airbrake/gobrake.v1"
+	"gopkg.in/airbrake/gobrake.v2"
 )
 
 var projectId int64 = 123
@@ -26,16 +26,23 @@ var apiKey string = "YOUR_API_KEY"
 
 func main() {
 	airbrake := gobrake.NewNotifier(projectId, apiKey)
-	airbrake.SetContext("environment", "production")
+	airbrake.AddFilter(function(n *gobrake.Notice) *gobrake.Notice {
+		n.Context["environment"] = "production"
+		return n
+	})
+	defer func() {
+		if v := recover(); v != nil {
+			airbrake.Notify(v, nil)
+			panic(v)
+		}
+	}()
+	defer airbrake.Flush()
+
 	glog.Gobrake = airbrake
 
 	if err := doSomeWork(); err != nil {
 		glog.Errorf("doSomeWork failed: %s", err)
 	}
-
-	// Errors are sent asynchronously, allow time for them to send before we exit
-	// this example.
-	select {}
 }
 ```
 
