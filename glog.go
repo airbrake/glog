@@ -75,9 +75,13 @@ func CopyStandardLogTo(name string) {
 	golog.CopyStandardLogTo(name)
 }
 
-// Flush flushes all pending log I/O.
+// Flush flushes all pending log I/O and calls Gobrake.Flush if
+// Gobrake is not nil.
 func Flush() {
 	golog.Flush()
+	if Gobrake != nil {
+		Gobrake.Flush()
+	}
 }
 
 // Info logs to the INFO log.
