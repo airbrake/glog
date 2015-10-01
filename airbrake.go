@@ -55,12 +55,12 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 			continue
 		}
 
-		notice := Gobrake.Notice(err, req, 4)
+		notice := Gobrake.Notice(err, req, 2)
 		notice.Errors[0].Message = msg
-		go Gobrake.SendNotice(notice)
+		Gobrake.SendNoticeAsync(notice)
 		return
 	}
 
-	notice := Gobrake.Notice(msg, req, 4)
-	go Gobrake.SendNotice(notice)
+	notice := Gobrake.Notice(msg, req, 2)
+	Gobrake.SendNoticeAsync(notice)
 }

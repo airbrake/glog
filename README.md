@@ -15,18 +15,22 @@ A basic example of how to configure glog to send logged errors to Airbrake.io:
 package main
 
 import (
-	"time"
+	"errors"
 
 	"gopkg.in/airbrake/glog.v2"
 	"gopkg.in/airbrake/gobrake.v2"
 )
 
 var projectId int64 = 123
-var apiKey string = "YOUR_API_KEY"
+var apiKey string = "API_KEY"
+
+func doSomeWork() error {
+	return errors.New("hello from Go")
+}
 
 func main() {
 	airbrake := gobrake.NewNotifier(projectId, apiKey)
-	airbrake.AddFilter(function(n *gobrake.Notice) *gobrake.Notice {
+	airbrake.AddFilter(func(n *gobrake.Notice) *gobrake.Notice {
 		n.Context["environment"] = "production"
 		return n
 	})
