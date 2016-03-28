@@ -30,18 +30,13 @@ func doSomeWork() error {
 
 func main() {
 	airbrake := gobrake.NewNotifier(projectId, apiKey)
+	defer airbrake.WaitAndClose(5*time.Second)
+	defer airbrake.NotifyOnPanic()
+
 	airbrake.AddFilter(func(n *gobrake.Notice) *gobrake.Notice {
 		n.Context["environment"] = "production"
 		return n
 	})
-	defer func() {
-		if v := recover(); v != nil {
-			airbrake.Notify(v, nil)
-			panic(v)
-		}
-	}()
-	defer airbrake.Flush()
-
 	glog.Gobrake = airbrake
 
 	if err := doSomeWork(); err != nil {
