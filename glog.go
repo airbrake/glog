@@ -79,9 +79,6 @@ func CopyStandardLogTo(name string) {
 // Gobrake is not nil.
 func Flush() {
 	golog.Flush()
-	if Gobrake != nil {
-		Gobrake.Flush()
-	}
 }
 
 // Info logs to the INFO log.
