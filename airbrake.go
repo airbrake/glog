@@ -15,13 +15,15 @@ var Gobrake *gobrake.Notifier
 //
 // Valid names are "INFO", "WARNING", "ERROR", and "FATAL".  If the name is not
 // recognized, "ERROR" severity is used.
+//
+// TODO: replace with SetGobrakeSeverity
 var GobrakeSeverity = "ERROR"
 
 type requester interface {
 	Request() *http.Request
 }
 
-func notifyAirbrake(s severity, format string, args ...interface{}) {
+func notifyAirbrake(depth int, s severity, format string, args ...interface{}) {
 	if Gobrake == nil {
 		return
 	}
@@ -55,12 +57,12 @@ func notifyAirbrake(s severity, format string, args ...interface{}) {
 			continue
 		}
 
-		notice := Gobrake.Notice(err, req, 2)
+		notice := Gobrake.Notice(err, req, depth)
 		notice.Errors[0].Message = msg
 		Gobrake.SendNoticeAsync(notice)
 		return
 	}
 
-	notice := Gobrake.Notice(msg, req, 2)
+	notice := Gobrake.Notice(msg, req, depth)
 	Gobrake.SendNoticeAsync(notice)
 }
