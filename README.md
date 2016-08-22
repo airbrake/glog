@@ -30,7 +30,7 @@ func doSomeWork() error {
 
 func main() {
 	airbrake := gobrake.NewNotifier(projectId, apiKey)
-	defer airbrake.WaitAndClose(5*time.Second)
+	defer airbrake.Close()
 	defer airbrake.NotifyOnPanic()
 
 	airbrake.AddFilter(func(n *gobrake.Notice) *gobrake.Notice {
