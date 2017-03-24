@@ -51,5 +51,5 @@ The default is to send only error logs to Airbrake.io. You can change the
 severity threshold to also send lower severity logs too, such as warnings:
 
 ```go
-glog.GobrakeSeverity = "WARNING"
+glog.SetGobrakeSeverity("WARNING")
 ```
