@@ -17,8 +17,8 @@ package main
 import (
 	"errors"
 
-	"gopkg.in/airbrake/glog.v2"
-	"gopkg.in/airbrake/gobrake.v2"
+	"github.com/airbrake/glog"
+	"github.com/airbrake/gobrake"
 )
 
 var projectId int64 = 123
