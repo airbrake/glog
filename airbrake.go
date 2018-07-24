@@ -13,6 +13,10 @@ var Gobrake *gobrake.Notifier
 
 var gobrakeSeverity = errorLog
 
+func SetGobrakeNotifier(notifier *gobrake.Notifier) {
+	Gobrake = notifier
+}
+
 // SetGobrakeSeverity sets minimum log severity that will be sent to Airbrake.
 //
 // Valid names are "INFO", "WARNING", "ERROR", and "FATAL".  If the name is not
@@ -28,11 +32,15 @@ type requester interface {
 	Request() *http.Request
 }
 
+// Implemented by context.Context
+type valuer interface {
+	Value(key interface{}) interface{}
+}
+
 func notifyAirbrake(depth int, s severity, format string, args ...interface{}) {
 	if Gobrake == nil {
 		return
 	}
-
 	if s < gobrakeSeverity {
 		return
 	}
@@ -44,28 +52,39 @@ func notifyAirbrake(depth int, s severity, format string, args ...interface{}) {
 		msg = fmt.Sprint(args...)
 	}
 
+	var theErr error
 	var req *http.Request
+	var values valuer
 	for _, arg := range args {
+		if v, ok := arg.(error); ok {
+			theErr = v
+		}
+		if v, ok := arg.(*http.Request); ok {
+			req = v
+		}
 		if v, ok := arg.(requester); ok {
 			req = v.Request()
-			break
+		}
+		if v, ok := arg.(valuer); ok {
+			values = v
 		}
 	}
 
-	for _, arg := range args {
-		err, ok := arg.(error)
-		if !ok {
-			continue
-		}
-
-		notice := Gobrake.Notice(err, req, depth)
+	var notice *gobrake.Notice
+	if theErr != nil {
+		notice = Gobrake.Notice(theErr, req, depth)
 		notice.Errors[0].Message = msg
-		notice.Context["severity"] = severityName[s]
-		Gobrake.SendNoticeAsync(notice)
-		return
+	} else {
+		notice = Gobrake.Notice(msg, req, depth)
+	}
+	notice.Context["severity"] = severityName[s]
+
+	if values != nil {
+		route, _ := values.Value("route").(string)
+		if route != "" {
+			notice.Context["route"] = route
+		}
 	}
 
-	notice := Gobrake.Notice(msg, req, depth)
-	notice.Context["severity"] = severityName[s]
 	Gobrake.SendNoticeAsync(notice)
 }

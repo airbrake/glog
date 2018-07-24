@@ -37,7 +37,7 @@ func main() {
 		n.Context["environment"] = "production"
 		return n
 	})
-	glog.Gobrake = airbrake
+	glog.SetGobrakeNotifier(airbrake)
 
 	if err := doSomeWork(); err != nil {
 		glog.Errorf("doSomeWork failed: %s", err)
