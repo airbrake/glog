@@ -70,6 +70,10 @@ func notifyAirbrake(depth int, s severity, format string, args ...interface{}) {
 		}
 	}
 
+	if values != nil && req == nil {
+		req, _ = values.Value("request").(*http.Request)
+	}
+
 	var notice *gobrake.Notice
 	if theErr != nil {
 		notice = Gobrake.Notice(theErr, req, depth)
