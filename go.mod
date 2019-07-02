@@ -1,4 +1,4 @@
-module github.com/airbrake/glog
+module github.com/airbrake/glog/v4
 
 go 1.13
 
