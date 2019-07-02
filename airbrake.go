@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/airbrake/gobrake"
+	"github.com/airbrake/gobrake/v4"
 )
 
 // Gobrake is an instance of Airbrake Go Notifier that is used to send
