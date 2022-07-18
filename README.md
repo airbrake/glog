@@ -1,6 +1,6 @@
 # Glog
 
-This fork of https://github.com/golang/glog provides all of glog's functionality
+This fork of <https://github.com/golang/glog> provides all of glog's functionality
 and adds the ability to send errors/logs to [Airbrake.io](https://airbrake.io).
 
 ## Logging
@@ -18,25 +18,23 @@ import (
 	"errors"
 
 	"github.com/airbrake/glog/v4"
-	"github.com/airbrake/gobrake/v4"
+	"github.com/airbrake/gobrake/v5"
 )
 
-var projectId int64 = 123
-var apiKey string = "API_KEY"
+var airbrake = gobrake.NewNotifierWithOptions(&gobrake.NotifierOptions{
+	ProjectId:   <YOUR PROJECT ID>, // <-- Fill in this value
+	ProjectKey:  "<YOUR API KEY>", // <-- Fill in this value
+	Environment: "production",
+})
 
 func doSomeWork() error {
 	return errors.New("hello from Go")
 }
 
 func main() {
-	airbrake := gobrake.NewNotifier(projectId, apiKey)
 	defer airbrake.Close()
 	defer airbrake.NotifyOnPanic()
 
-	airbrake.AddFilter(func(n *gobrake.Notice) *gobrake.Notice {
-		n.Context["environment"] = "production"
-		return n
-	})
 	glog.SetGobrakeNotifier(airbrake)
 
 	if err := doSomeWork(); err != nil {
